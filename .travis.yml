@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t testcyberattacking/react-test -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run testcyberattacking/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t testcyberattacking/multi-client ./client
+  - docker build -t testcyberattacking/multi-nginx ./nginx
+  - docker build -t testcyberattacking/multi-server ./server
+  - docker build -t testcyberattacking/multi-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to Docker hub
+  - docker push testcyberattacking/multi-client
+  - docker push testcyberattacking/multi-nginx
+  - docker push testcyberattacking/multi-server
+  - docker push testcyberattacking/multi-worker
